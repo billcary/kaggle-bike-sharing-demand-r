@@ -4,15 +4,12 @@
 # Date   : Aug-18-2014
 #
 
-#Set your working folder - CHANGE THIS PATH APPROPRIATELY
-setwd("D:\\data-science\\bikesharing\\")
-
 #Loading training file as well as test file - CHANGE THIS PATH APPROPRIATELY
-train <- read.csv("D:\\data-science\\bikesharing\\train.csv")
-test <- read.csv("D:\\data-science\\bikesharing\\test.csv")
+train <- read.csv('../data/train.csv')
+test <- read.csv('../data/test.csv')
 
 #install required libraries
-install.packages("lubridate") 
+install.packages('lubridate') 
 install.packages('randomForest')
 library(lubridate)
 library(randomForest)
@@ -34,4 +31,4 @@ fit <- randomForest(as.factor(count) ~ season + holiday + weather + dow+ hour + 
 #Predict values and save output
 Prediction <- predict(fit, test)
 submit <- data.frame(datetime = test$datetime, count = Prediction)
-write.csv(submit, file = "random-forest.csv", row.names = FALSE)
+write.csv(submit, file = 'random-forest.csv', row.names = FALSE)

@@ -48,8 +48,16 @@ registered_prediction <- predict(registered_fit, processed_test)
 
 submit <- data.frame(datetime = test$datetime, casual=casual_prediction,
                      registered=registered_prediction)
+# Convert columns to numeric to allow addition
 submit$casual <- as.numeric(submit$casual)
 submit$registered <- as.numeric(submit$registered)
+
+# Add 'casual' and 'registered' columns to determine the total ridership
 submit$count <- as.numeric(submit$casual) + as.numeric(submit$registered)
+
+# Drop 'casual' and 'registered' columns in order to match submission format
+# required by Kaggle
+submit$casual <- NULL
+submit$registered <- NULL
 
 write.csv(submit, file = 'random-forest.csv', row.names = FALSE)

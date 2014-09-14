@@ -1,7 +1,8 @@
 #
 # Project: Predict Bike Sharing Demand using R
 # Author : Gopinath Munisifreddy
-# Date   : Aug-18-2014
+# Modified by: Bill Cary
+# Date   : 14 Sept 20014
 #
 
 # Source data pre-processing routines

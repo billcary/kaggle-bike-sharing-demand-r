@@ -26,7 +26,7 @@ test$count<-0
 #Create a random forest
 fit <- randomForest(as.factor(count) ~ season + holiday + weather + dow+ hour + temp + atemp+humidity+windspeed , data=train, ntree = 700, importance=TRUE)
 #Uncomment the following line if you want to see how your model plot looks like
-#varImpPlot(fit)
+varImpPlot(fit)
 
 #Predict values and save output
 Prediction <- predict(fit, test)

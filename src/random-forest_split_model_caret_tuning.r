@@ -17,14 +17,14 @@ processed_test <- process.bike.data(test)
 
 
 #install required libraries for modeling and data manipulation
-install.packages('lubridate') 
-install.packages('randomForest')
+# install.packages('lubridate') 
+# install.packages('randomForest')
 library(lubridate)
 library(randomForest)
 
 #install required libraries for performance measurement & improvement
-install.packages('caret')
-install.packages('Metrics')
+# install.packages('caret')
+# install.packages('Metrics')
 library(caret)
 library(Metrics)
 

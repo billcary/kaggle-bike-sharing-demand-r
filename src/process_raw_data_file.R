@@ -1,5 +1,5 @@
 process.bike.data <- function (bikedataframe) {
-  # Exploratory analysis
+  # Load libraries
   library(lubridate)
   library(weathermetrics)
   
@@ -8,10 +8,10 @@ process.bike.data <- function (bikedataframe) {
   # or absence of rain
   israiny <- function(weather){
           if (weather == 1){
-                  return(FALSE)
+                  return(0)
           }
           else{
-                  return(TRUE)
+                  return(1)
           }
   }
   
@@ -73,27 +73,27 @@ process.bike.data <- function (bikedataframe) {
   newbikedata <- bikedataframe
   
   # Convert season, holiday, workingday, weather into factor variables
-  newbikedata$season <- factor(newbikedata$season, levels = c(1, 2, 3, 4),
-                         labels = c('Spring', 'Summer', 'Fall', 'Winter'))
-  
-  newbikedata$holiday <- factor(newbikedata$holiday, levels = c(0, 1),
-                         labels = c('No', 'Yes'))
-  
-  newbikedata$workingday <- factor(newbikedata$workingday, levels = c(0, 1),
-                          labels = c('No', 'Yes'))
-  
-  newbikedata$weather <- factor(newbikedata$weather, levels = c(1, 2, 3, 4),
-          labels = c('1: Clear, Few clouds, Partly cloudy, Partly cloudy',
-                '2: Mist + Cloudy, Mist + Broken clouds, Mist + Few clouds, Mist',
-                '3: Light Snow, Light Rain + Thunderstorm + Scattered clouds, Light Rain + Scattered clouds',
-                '4: Heavy Rain + Ice Pallets + Thunderstorm + Mist, Snow + Fog'))
+#   newbikedata$season <- factor(newbikedata$season, levels = c(1, 2, 3, 4),
+#                          labels = c('Spring', 'Summer', 'Fall', 'Winter'))
+#   
+#   newbikedata$holiday <- factor(newbikedata$holiday, levels = c(0, 1),
+#                          labels = c('No', 'Yes'))
+#   
+#   newbikedata$workingday <- factor(newbikedata$workingday, levels = c(0, 1),
+#                           labels = c('No', 'Yes'))
+#   
+#   newbikedata$weather <- factor(newbikedata$weather, levels = c(1, 2, 3, 4),
+#           labels = c('1: Clear, Few clouds, Partly cloudy, Partly cloudy',
+#                 '2: Mist + Cloudy, Mist + Broken clouds, Mist + Few clouds, Mist',
+#                 '3: Light Snow, Light Rain + Thunderstorm + Scattered clouds, Light Rain + Scattered clouds',
+#                 '4: Heavy Rain + Ice Pallets + Thunderstorm + Mist, Snow + Fog'))
   
   
   # Add column that converts datatime into a true datetime data type
   newbikedata$timestamp <- strptime(newbikedata$datetime, '%Y-%m-%d %H:%M:%S')
   
-  # Add factor column specifying day of week
-  newbikedata$dayofweek <- factor(weekdays(newbikedata$timestamp))
+  # Add column specifying day of week
+  newbikedata$dayofweek <- wday(newbikedata$timestamp)
   
   # Add column specifying day of month
   newbikedata$dayofmonth <- mday(newbikedata$timestamp)
@@ -110,7 +110,13 @@ process.bike.data <- function (bikedataframe) {
   
   # Add column for wind chill factor
   newbikedata$windchill <- windchill(newbikedata$temp, newbikedata$windspeed)
+
+  # Drop datetime factor column
+  newbikedata$datetime <- NULL
   
+  # Reorder columns
+  newbikedata <- newbikedata[c(12, 1:8, 13:18, 9:11)]
+
   return(newbikedata)
   
 }

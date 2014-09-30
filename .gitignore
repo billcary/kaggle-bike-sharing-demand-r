@@ -1,9 +1,18 @@
-# History files
-.Rhistory
-
 # Example code in package build process
 *-Ex.R
 
-# R data files from past sessions
-.Rdata
+
+# R
 .Rproj.user
+.Rhistory
+.RData
+.zip
+
+# ignore any big files
+*.big-data
+datafiles/
+data/
+
+# Domino
+domino.log
+dominodump-*

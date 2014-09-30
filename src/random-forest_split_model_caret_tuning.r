@@ -4,12 +4,21 @@
 # Date   : 14 Sept 20014
 #
 
+## Get the local path on Domino
+path_cloud <- getwd()
+
+path_source <- paste0(path_cloud, "/src/")
+path_train <- paste0(path_cloud, '/data/train.csv')
+path_test <- paste0(path_cloud, '/data/test.csv')
+path_results <- paste0(path_cloud, '/results/kaggle_submission_file.csv')
+
 # Source data pre-processing routines
-source('./process_raw_data_file.R')
+source(paste0(path_source, 'install.R'))
+source(paste0(path_source, 'process_raw_data_file.R'))
 
 #Loading training file as well as test file - CHANGE THIS PATH APPROPRIATELY
-train <- read.csv('../data/train.csv')
-test <- read.csv('../data/test.csv')
+train <- read.csv(path_train)
+test <- read.csv(path_test)
 
 # Pre-process both training and test data
 processed_train <- process.bike.data(train)
@@ -17,16 +26,18 @@ processed_test <- process.bike.data(test)
 
 
 #install required libraries for modeling and data manipulation
-# install.packages('lubridate') 
-# install.packages('randomForest')
 library(lubridate)
 library(randomForest)
 
 #install required libraries for performance measurement & improvement
-# install.packages('caret')
-# install.packages('Metrics')
 library(caret)
 library(Metrics)
+
+# Set up parallel processing with four cores
+library(doParallel)
+
+cl <- makeCluster(detectCores())
+registerDoParallel(cl)
 
 
 processed_test$casual <- 0
@@ -46,21 +57,21 @@ set.seed(300)
 #                     trControl = tc,
 #                     metric = 'RMSE')
 
-casual_fit <- randomForest(as.factor(casual) ~ season + holiday + weather + 
+system.time(casual_fit <- randomForest(as.factor(casual) ~ season + holiday + weather + 
                                    dayofweek + hourofday + temp + atemp + humidity +
                                    windspeed + workingday + dayofmonth + israiny,
                            data = processed_train,
                            method = 'rf',
                            trControl = tc,
-                           metric = 'RMSE')
+                           metric = 'RMSE'))
 
-registered_fit <- randomForest(as.factor(registered) ~ season + holiday + weather + 
+system.time(registered_fit <- randomForest(as.factor(registered) ~ season + holiday + weather + 
                                        dayofweek + hourofday + temp + atemp + humidity +
                                        windspeed + workingday + dayofmonth + israiny,
                                data = processed_train,
                                method = 'rf',
                                trControl = tc,
-                               metric = 'RMSE')
+                               metric = 'RMSE'))
 
 #Uncomment the following line if you want to see how your model plot looks like
 #varImpPlot(fit)
@@ -74,7 +85,7 @@ registered_prediction <- predict(registered_fit, processed_test)
 casual_prediction_train <- predict(casual_fit, processed_train)
 registered_prediction_train <- predict(registered_fit, processed_train)
 
-# Create submission file based on predictions for test data
+# Create submission file based on predictions for training data
 predict_train <- data.frame(datetime = train$datetime, casual=casual_prediction_train,
                      registered=registered_prediction_train)
 
@@ -112,5 +123,15 @@ submit$count <- as.numeric(submit$casual) + as.numeric(submit$registered)
 submit$casual <- NULL
 submit$registered <- NULL
 
-write.csv(submit, file = '../results/random-forest-tuned.csv', row.names = FALSE)
+write.csv(submit, file = path_results, row.names = FALSE)
+
+stopCluster(cl)
 #------------------------------------------------------------------------
+
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Print System and Session Info
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+print(sessionInfo())
+
+print(Sys.info())

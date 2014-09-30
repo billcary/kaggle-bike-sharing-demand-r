@@ -115,7 +115,12 @@ process.bike.data <- function (bikedataframe) {
   newbikedata$datetime <- NULL
   
   # Reorder columns
-  newbikedata <- newbikedata[c(12, 1:8, 13:18, 9:11)]
+  if(ncol(newbikedata) == 18){
+          newbikedata <- newbikedata[c(12, 1:8, 13:18, 9:11)]
+  }
+  else{
+          newbikedata <- newbikedata[c(9, 1:8, 10:15)]
+  }
 
   return(newbikedata)
   

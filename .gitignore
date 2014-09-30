@@ -1,18 +1,16 @@
 # Example code in package build process
 *-Ex.R
-
-
 # R
 .Rproj.user
 .Rhistory
 .RData
 .zip
-
 # ignore any big files
 *.big-data
 datafiles/
 data/
-
 # Domino
 domino.log
 dominodump-*
+domino.last.dump.rda
+domino.workspace.RData

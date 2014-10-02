@@ -71,22 +71,33 @@ process.bike.data <- function (bikedataframe) {
   
   # Copy bikedataframe to a new dataframe
   newbikedata <- bikedataframe
+
+  ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ## Convert season, holiday, workingday into factor variables
+  ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  newbikedata$season <- factor(newbikedata$season, levels = c(1, 2, 3, 4),
+                         labels = c('Spring', 'Summer', 'Fall', 'Winter'))
   
-  # Convert season, holiday, workingday, weather into factor variables
-#   newbikedata$season <- factor(newbikedata$season, levels = c(1, 2, 3, 4),
-#                          labels = c('Spring', 'Summer', 'Fall', 'Winter'))
-#   
-#   newbikedata$holiday <- factor(newbikedata$holiday, levels = c(0, 1),
-#                          labels = c('No', 'Yes'))
-#   
-#   newbikedata$workingday <- factor(newbikedata$workingday, levels = c(0, 1),
-#                           labels = c('No', 'Yes'))
-#   
-#   newbikedata$weather <- factor(newbikedata$weather, levels = c(1, 2, 3, 4),
-#           labels = c('1: Clear, Few clouds, Partly cloudy, Partly cloudy',
-#                 '2: Mist + Cloudy, Mist + Broken clouds, Mist + Few clouds, Mist',
-#                 '3: Light Snow, Light Rain + Thunderstorm + Scattered clouds, Light Rain + Scattered clouds',
-#                 '4: Heavy Rain + Ice Pallets + Thunderstorm + Mist, Snow + Fog'))
+  newbikedata$holiday <- factor(newbikedata$holiday, levels = c(0, 1),
+                         labels = c('No', 'Yes'))
+  
+  newbikedata$workingday <- factor(newbikedata$workingday, levels = c(0, 1),
+                          labels = c('No', 'Yes'))
+  
+
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Factorize weather data (shorten names for printing)
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## 1: Clear, Few clouds, Partly cloudy, Partly cloudy
+## 2: Mist + Cloudy, Mist + Broken clouds, Mist + Few clouds, Mist
+## 3: Light Snow, Light Rain + Thunderstorm + Scattered clouds, Light Rain + Scattered clouds
+## 4: Heavy Rain + Ice Pallets + Thunderstorm + Mist, Snow + Fog
+
+   newbikedata$weather <- factor(newbikedata$weather, levels = c(1, 2, 3, 4),
+           labels = c('1: Clear',
+                 '2: Overcast/Misty',
+                 '3: Light Precip',
+                 '4: Heavy Fog or Precip'))
   
   
   # Add column that converts datatime into a true datetime data type

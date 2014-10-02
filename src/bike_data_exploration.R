@@ -4,11 +4,32 @@
 # Date   : 14 Sept 20014
 #
 
-# Source data pre-processing routines
-source('./process_raw_data_file.R')
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Load required libraries
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+library(DescTools) # Descriptive statistics
 
-#------------------------------------------------------------------
-# Helper Functions
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Environment Preparation
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+## Get the local path on Domino
+path_cloud <- getwd()
+
+## Define other paths
+path_source <- paste0(path_cloud, "/src/")
+path_train <- paste0(path_cloud, '/data/train.csv')
+path_test <- paste0(path_cloud, '/data/test.csv')
+path_results <- paste0(path_cloud, '/results/kaggle_submission_file.csv')
+
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Source data prep functions (process.bike.data())
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+source(paste0(path_source, 'process_raw_data_file.R')) # pre-processing
+
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Helper Functions
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 panel.hist <- function(x, ...)
 {
@@ -30,18 +51,24 @@ panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...)
         if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
         text(0.5, 0.5, txt, cex = cex.cor * r)
 }
-#-----------------------------------------------------------------------
 
-#Loading training file as well as test file - CHANGE THIS PATH APPROPRIATELY
-train <- read.csv('../data/train.csv')
-test <- read.csv('../data/test.csv')
 
-# Pre-process both training and test data
-processed_train <- process.bike.data(train)
-processed_test <- process.bike.data(test)
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Loading training file as well as test file
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+train <- read.csv(path_train)
+test <- read.csv(path_train)
 
-# Examine structure of training data
-str(processed_train)
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Preprocess data (add features, etc...)
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+train <- process.bike.data(train)
+test <- process.bike.data(test)
+
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Examine structure of training data
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Desc(train, plotit = TRUE)
 
 # Create scatterplot matrix to investigate pairwise relationships
 pairs(processed_train[, 2:18],

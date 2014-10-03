@@ -84,21 +84,6 @@ process.bike.data <- function (bikedataframe) {
   newbikedata$workingday <- factor(newbikedata$workingday, levels = c(0, 1),
                           labels = c('No', 'Yes'))
   
-
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-## Factorize weather data (shorten names for printing)
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-## 1: Clear, Few clouds, Partly cloudy, Partly cloudy
-## 2: Mist + Cloudy, Mist + Broken clouds, Mist + Few clouds, Mist
-## 3: Light Snow, Light Rain + Thunderstorm + Scattered clouds, Light Rain + Scattered clouds
-## 4: Heavy Rain + Ice Pallets + Thunderstorm + Mist, Snow + Fog
-
-   newbikedata$weather <- factor(newbikedata$weather, levels = c(1, 2, 3, 4),
-           labels = c('1: Clear',
-                 '2: Overcast/Misty',
-                 '3: Light Precip',
-                 '4: Heavy Fog or Precip'))
-  
   
   # Add column that converts datatime into a true datetime data type
   newbikedata$timestamp <- strptime(newbikedata$datetime, '%Y-%m-%d %H:%M:%S')
@@ -122,15 +107,33 @@ process.bike.data <- function (bikedataframe) {
   # Add column for wind chill factor
   newbikedata$windchill <- windchill(newbikedata$temp, newbikedata$windspeed)
 
+  # Add column containing only date formatted as a date datatype
+  newbikedata$date <- as.Date(strptime(newbikedata$datetime, '%Y-%m-%d %H:%M:%S'))
+
   # Drop datetime factor column
   newbikedata$datetime <- NULL
   
+  ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ## Factorize weather data (shorten names for printing)
+  ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ## 1: Clear, Few clouds, Partly cloudy, Partly cloudy
+  ## 2: Mist + Cloudy, Mist + Broken clouds, Mist + Few clouds, Mist
+  ## 3: Light Snow, Light Rain + Thunderstorm + Scattered clouds, Light Rain + Scattered clouds
+  ## 4: Heavy Rain + Ice Pallets + Thunderstorm + Mist, Snow + Fog
+  
+  newbikedata$weather <- factor(newbikedata$weather, levels = c(1, 2, 3, 4),
+                                labels = c('1: Clear',
+                                           '2: Overcast/Misty',
+                                           '3: Light Precip',
+                                           '4: Heavy Fog or Precip'))
+
+  
   # Reorder columns
-  if(ncol(newbikedata) == 18){
-          newbikedata <- newbikedata[c(12, 1:8, 13:18, 9:11)]
+  if(ncol(newbikedata) == 19){
+          newbikedata <- newbikedata[c(12, 1:8, 13:19, 9:11)]
   }
   else{
-          newbikedata <- newbikedata[c(9, 1:8, 10:15)]
+          newbikedata <- newbikedata[c(9, 1:8, 10:16)]
   }
 
   return(newbikedata)

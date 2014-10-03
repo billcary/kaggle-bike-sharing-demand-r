@@ -1,7 +1,8 @@
 #
-# Project: Predict Bike Sharing Demand using R
-# Author : Bill Cary
-# Date   : 14 Sept 20014
+# Project:         Predict Bike Sharing Demand using R
+# Author :         Bill Cary
+# Date   :         14 Sept 2014
+# Script Purpose:  Explore and describe the source data
 #
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -68,7 +69,9 @@ test <- process.bike.data(test)
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Examine structure of training data
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Desc(train, plotit = TRUE)
+Desc(train, plotit = TRUE)  # individual features
+Desc(count ~ weather, train, plotit = TRUE)
+Desc(count ~ atemp, train, plotit = TRUE)
 
 # Create scatterplot matrix to investigate pairwise relationships
 pairs(processed_train[, 2:18],

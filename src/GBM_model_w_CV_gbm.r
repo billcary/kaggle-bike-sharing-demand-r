@@ -48,6 +48,7 @@ processed_test$registered <- 0
 ## Train a GBM model for each variable (Casual and Registered)
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# Create single-column ddataframe holding datetime values from test data
 raw_sub <- data.frame(processed_test[, 1])
 
 ## One Variable at at Time
@@ -59,8 +60,12 @@ for (n_label in 1:2) {
         cat("\n\nNow training a GBM model for", ls_label[n_label], "...\n")
         
         ## Train a gbm
-        model <- gbm(processed_train[, 16 + n_label]~.
-                     ,data = processed_train[, -c(1, 6, 11, 13, 15, 16, 17, 18, 19)]
+        formula = processed_train[, 16 + n_label] ~ season  +holiday +
+                workingday + weather + atemp + humidity + windspeed +
+                dayofweek + hourofday + heatindex
+        
+        model <- gbm(formula
+                     ,data = processed_train
                      ,var.monotone=NULL # which vars go up or down with target
                      ,distribution="poisson"
                      ,n.trees=2000
@@ -84,10 +89,12 @@ for (n_label in 1:2) {
         
         index <- n_label + 1
         
-        ## Use the model for prediction and store the results in submission template
+        ## Use the model for prediction and store the results in a new column
+        ## in the submission template dataframe
         raw_sub[, index] <- predict(model, processed_test[, 2:15], best.iter
                                     , type = 'response')
         
+        # summarize the results of the prediction
         summary(raw_sub[, index])
         
         # Take absolute value to eliminate negative predictions
@@ -110,7 +117,8 @@ submit_file <- data.frame(raw_sub$datetime, raw_sub$count)
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Write results to csv file for upload to Kaggle
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-write.csv(submit_file, file = path_results, row.names = FALSE)
+write.table(submit_file, file = path_results, row.names = FALSE, sep = ','
+            ,col.names = c('datetime', 'count'), quote = FALSE)
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Print System and Session Info

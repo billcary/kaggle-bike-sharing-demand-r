@@ -62,7 +62,7 @@ for (n_label in 1:2) {
         model <- gbm(processed_train[, 16 + n_label]~.
                      ,data = processed_train[, -c(1, 6, 11, 13, 15, 16, 17, 18, 19)]
                      ,var.monotone=NULL # which vars go up or down with target
-                     ,distribution="gaussian"
+                     ,distribution="poisson"
                      ,n.trees=1500
                      ,shrinkage=0.05
                      ,interaction.depth=4

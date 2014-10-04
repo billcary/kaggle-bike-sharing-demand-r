@@ -63,7 +63,7 @@ for (n_label in 1:2) {
                      ,data = processed_train[, -c(1, 6, 11, 13, 15, 16, 17, 18, 19)]
                      ,var.monotone=NULL # which vars go up or down with target
                      ,distribution="poisson"
-                     ,n.trees=1500
+                     ,n.trees=2000
                      ,shrinkage=0.05
                      ,interaction.depth=4
                      ,bag.fraction = 0.5

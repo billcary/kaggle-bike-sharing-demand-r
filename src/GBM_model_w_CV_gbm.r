@@ -25,13 +25,8 @@ source(paste0(path_source, 'process_raw_data_file.R')) # pre-processing
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Load required libraries
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-library(h2o) # parallel processing on Domino
+library(gbm)
 library(Metrics) # performance measurement & improvement
-
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-## Initiate and Connect to a Local H2O Cluster on Domino
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-localH2O <- h2o.init(max_mem_size = '12g') ## using a max 1GB of RAM
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Import Data from Filesystem
@@ -50,14 +45,6 @@ processed_test$casual <- 0
 processed_test$registered <- 0
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-## Pass Data to H2O
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-train_h2o <- as.h2o(localH2O, processed_train)
-test_h2o <- as.h2o(localH2O, processed_test)
-
-train_h2o$timestamp <- as.Date.H2OParsedData(as.factor(train_h2o$timestamp), '%Y-%m-%d %H:%M:%S')
-
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Train a GBM model for each variable (Casual and Registered)
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -72,25 +59,39 @@ for (n_label in 1:2) {
         cat("\n\nNow training a GBM model for", ls_label[n_label], "...\n")
         
         ## Train a gbm
-        model <- h2o.gbm(x = 2:15,
-                         y = (15 + n_label),
-                         data = train_h2o,
-                         distribution = 'gaussian',
-                         n.trees = 1200,
-                         interaction.depth = 3,
-                         n.minobsinnode = 10,
-                         shrinkage = 0.05,
-                         n.bins = 100,
-                         importance = FALSE,
-                         nfolds = 10)
+        model <- gbm(processed_train[, 16 + n_label]~.
+                     ,data = processed_train[, -c(1, 6, 11, 13, 15, 16, 17, 18, 19)]
+                     ,var.monotone=NULL # which vars go up or down with target
+                     ,distribution="gaussian"
+                     ,n.trees=1500
+                     ,shrinkage=0.05
+                     ,interaction.depth=4
+                     ,bag.fraction = 0.5
+                     ,train.fraction = 1
+                     ,n.minobsinnode = 10
+                     ,cv.folds = 10
+                     ,keep.data=TRUE
+                     ,verbose=TRUE)
         
-        ## Print the Model Summary
-        print(model)
+        ## Print the Model Summary        
+        best.iter <- gbm.perf(model,method="cv") ##the best iteration number
+        
+        cat("\n\nBest iteration:\n")
+        print(pretty.gbm.tree(model, best.iter))
+        
+        cat("\n\nModel Summary:\n")
+        print(summary(model, n.trees=best.iter))
         
         index <- n_label + 1
         
         ## Use the model for prediction and store the results in submission template
-        raw_sub[, index] <- as.matrix(h2o.predict(model, test_h2o[, 2:15]))
+        raw_sub[, index] <- predict(model, processed_test[, 2:15], best.iter
+                                    , type = 'response')
+        
+        summary(raw_sub[, index])
+        
+        # Take absolute value to eliminate negative predictions
+        raw_sub[, index] <- abs(raw_sub[, index])
         
 }
 

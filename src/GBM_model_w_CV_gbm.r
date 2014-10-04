@@ -19,7 +19,7 @@ path_test <- paste0(path_cloud, '/data/test.csv')
 path_results <- paste0(path_cloud, '/results/kaggle_gbm_submission_file.csv')
 
 ## Source helper scripts
-#source(paste0(path_source, 'install.R'))  # Install required libraries
+source(paste0(path_source, 'install.R'))  # Install required libraries
 source(paste0(path_source, 'process_raw_data_file.R')) # pre-processing
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

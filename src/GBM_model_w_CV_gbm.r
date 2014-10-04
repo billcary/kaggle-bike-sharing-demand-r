@@ -60,7 +60,7 @@ for (n_label in 1:2) {
         cat("\n\nNow training a GBM model for", ls_label[n_label], "...\n")
         
         ## Train a gbm
-        formula = processed_train[, 16 + n_label] ~ season  +holiday +
+        formula = processed_train[, 16 + n_label] ~ season  + holiday +
                 workingday + weather + atemp + humidity + windspeed +
                 dayofweek + hourofday + heatindex
         

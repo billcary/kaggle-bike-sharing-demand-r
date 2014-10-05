@@ -65,9 +65,9 @@ fitControl <- trainControl(## 10-fold CV
         ## repeated ten times
         repeats = 10)
 
-gbmGrid <- expand.grid(interaction.depth = c(4),
-                       n.trees = (2000),
-                       shrinkage = 0.05)
+gbmGrid <- expand.grid(interaction.depth = c(1, 5, 9)
+                       ,n.trees = (1:40)*50
+                       ,shrinkage = 0.1)
 
 
 ## One Variable at at Time
@@ -85,17 +85,11 @@ for (n_label in 1:2) {
                 dayofweek + hourofday + heatindex
         
         model <- train(formula
-                     ,data = processed_train
-                     ,method = 'gbm'
-                     ,trControl = fitControl
-                     ,tuneGrid = gbmGrid
-                     ,var.monotone = NULL # which vars go up or down with target
-                     ,distribution = 'poisson'
-                     ,bag.fraction = 0.5
-                     ,train.fraction = 1
-                     ,n.minobsinnode = 10
-                     ,keep.data=TRUE
-                     ,verbose=TRUE)
+                        ,data = processed_train
+                        ,method = 'gbm'
+                        ,trControl = fitControl
+                        ,verbose = TRUE
+                        ,tuneGrid = gbmGrid)
         
         ## Print the Model and Model Summary        
         print(model)

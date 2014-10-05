@@ -65,9 +65,9 @@ fitControl <- trainControl(## 10-fold CV
         ## repeated ten times
         repeats = 10)
 
-gbmGrid <- expand.grid(interaction.depth = c(1, 5, 9)
-                       ,n.trees = (1:40)*50
-                       ,shrinkage = 0.1)
+# gbmGrid <- expand.grid(interaction.depth = c(1, 5, 9)
+#                        ,n.trees = (1:40)*50
+#                        ,shrinkage = 0.1)
 
 
 ## One Variable at at Time
@@ -89,7 +89,9 @@ for (n_label in 1:2) {
                         ,method = 'gbm'
                         ,trControl = fitControl
                         ,verbose = TRUE
-                        ,tuneGrid = gbmGrid)
+                       ,interaction.depth = 9
+                       ,n.trees = 1650
+                       ,shrinkage = 0.1)
         
         ## Print the Model and Model Summary        
         print(model)

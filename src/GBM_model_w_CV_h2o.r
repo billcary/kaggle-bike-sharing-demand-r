@@ -1,7 +1,7 @@
 #
 # Project: Predict Bike Sharing Demand using R
 # Author : Bill Cary
-# Date   : 30 Sept 20014
+# Date   : 30 Sept 2014
 # Method : Gradient Boosted Machine
 #
 
@@ -55,7 +55,8 @@ processed_test$registered <- 0
 train_h2o <- as.h2o(localH2O, processed_train)
 test_h2o <- as.h2o(localH2O, processed_test)
 
-train_h2o$timestamp <- as.Date.H2OParsedData(as.factor(train_h2o$timestamp), '%Y-%m-%d %H:%M:%S')
+train_h2o$timestamp <- as.Date.H2OParsedData(as.factor(train_h2o$timestamp),
+                                             '%Y-%m-%d %H:%M:%S')
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Train a GBM model for each variable (Casual and Registered)
@@ -92,6 +93,9 @@ for (n_label in 1:2) {
         ## Use the model for prediction and store the results in submission template
         raw_sub[, index] <- as.matrix(h2o.predict(model, test_h2o[, 2:15]))
         
+        # Take absolute value to eliminate negative predictions
+        raw_sub[, index] <- abs(raw_sub[, index])
+        
 }
 
 
@@ -109,7 +113,8 @@ submit_file <- data.frame(raw_sub$datetime, raw_sub$count)
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Write results to csv file for upload to Kaggle
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-write.csv(submit_file, file = path_results, row.names = FALSE)
+write.table(submit_file, file = path_results, row.names = FALSE, sep = ','
+            ,col.names = c('datetime', 'count'), quote = FALSE, eol = '\r\n')
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Print System and Session Info

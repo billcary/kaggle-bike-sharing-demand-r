@@ -19,7 +19,7 @@ path_test <- paste0(path_cloud, '/data/test.csv')
 path_results <- paste0(path_cloud, '/results/kaggle_gbm_submission_file.csv')
 
 ## Source helper scripts
-source(paste0(path_source, 'install.R'))  # Install required libraries
+#source(paste0(path_source, 'install.R'))  # Install required libraries
 source(paste0(path_source, 'process_raw_data_file.R')) # pre-processing
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -32,7 +32,7 @@ library(doParallel)
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Register parallel backend
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-cl <- makeCluster(32)  # set approapriately for server on which job will run
+cl <- makeCluster(4)  # set approapriately for server on which job will run
 registerDoParallel(cl)
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -65,9 +65,9 @@ fitControl <- trainControl(## 10-fold CV
         ## repeated ten times
         repeats = 10)
 
-# gbmGrid <- expand.grid(interaction.depth = c(1, 5, 9)
-#                        ,n.trees = (1:40)*50
-#                        ,shrinkage = 0.1)
+gbmGrid <- expand.grid(interaction.depth = 2
+                       ,n.trees = 100
+                       ,shrinkage = 0.05)
 
 
 ## One Variable at at Time
@@ -88,10 +88,8 @@ for (n_label in 1:2) {
                         ,data = processed_train
                         ,method = 'gbm'
                         ,trControl = fitControl
-                        ,verbose = TRUE
-                       ,interaction.depth = 9
-                       ,n.trees = 1650
-                       ,shrinkage = 0.1)
+                        ,tuneGrid = gbmGrid
+                        ,verbose = TRUE)
         
         ## Print the Model and Model Summary        
         print(model)

@@ -19,7 +19,7 @@ path_test <- paste0(path_cloud, '/data/test.csv')
 path_results <- paste0(path_cloud, '/results/kaggle_gbm_submission_file.csv')
 
 ## Source helper scripts
-#source(paste0(path_source, 'install.R'))  # Install required libraries
+source(paste0(path_source, 'install.R'))  # Install required libraries
 source(paste0(path_source, 'process_raw_data_file.R')) # pre-processing
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -32,7 +32,7 @@ library(doParallel)
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Register parallel backend
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-cl <- makeCluster(4)
+cl <- makeCluster(32)  # set approapriately for server on which job will run
 registerDoParallel(cl)
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -65,9 +65,10 @@ fitControl <- trainControl(## 10-fold CV
         ## repeated ten times
         repeats = 10)
 
-gbmGrid <- expand.grid(interaction.depth = c(1, 5, 9),
-                       n.trees = (1:40)*50,
-                       shrinkage = 0.1)
+gbmGrid <- expand.grid(interaction.depth = c(4),
+                       n.trees = (2000),
+                       shrinkage = 0.05)
+
 
 ## One Variable at at Time
 ls_label <- c("Casual Riders", "Registered Riders")
@@ -87,11 +88,18 @@ for (n_label in 1:2) {
                      ,data = processed_train
                      ,method = 'gbm'
                      ,trControl = fitControl
-                     ,verbose = TRUE
-                     ,tuneGrid = gbmGrid)
+                     ,tuneGrid = gbmGrid
+                     ,var.monotone = NULL # which vars go up or down with target
+                     ,distribution = 'poisson'
+                     ,bag.fraction = 0.5
+                     ,train.fraction = 1
+                     ,n.minobsinnode = 10
+                     ,keep.data=TRUE
+                     ,verbose=TRUE)
         
-        ## Print the Model Summary        
-        model
+        ## Print the Model and Model Summary        
+        print(model)
+        summary(model)
         
         index <- n_label + 1
         
@@ -123,7 +131,7 @@ submit_file <- data.frame(raw_sub$datetime, raw_sub$count)
 ## Write results to csv file for upload to Kaggle
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 write.table(submit_file, file = path_results, row.names = FALSE, sep = ','
-            ,col.names = c('datetime', 'count'), quote = FALSE)
+            ,col.names = c('datetime', 'count'), quote = FALSE, eol = '\r\n')
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Print System and Session Info

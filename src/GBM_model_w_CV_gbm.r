@@ -19,7 +19,7 @@ path_test <- paste0(path_cloud, '/data/test.csv')
 path_results <- paste0(path_cloud, '/results/kaggle_gbm_submission_file.csv')
 
 ## Source helper scripts
-source(paste0(path_source, 'install.R'))  # Install required libraries
+#source(paste0(path_source, 'install.R'))  # Install required libraries
 source(paste0(path_source, 'process_raw_data_file.R')) # pre-processing
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -70,7 +70,7 @@ for (n_label in 1:2) {
                      ,distribution="poisson"
                      ,n.trees=2000
                      ,shrinkage=0.05
-                     ,interaction.depth=4
+                     ,interaction.depth=9
                      ,bag.fraction = 0.5
                      ,train.fraction = 1
                      ,n.minobsinnode = 10
@@ -118,7 +118,7 @@ submit_file <- data.frame(raw_sub$datetime, raw_sub$count)
 ## Write results to csv file for upload to Kaggle
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 write.table(submit_file, file = path_results, row.names = FALSE, sep = ','
-            ,col.names = c('datetime', 'count'), quote = FALSE)
+            ,col.names = c('datetime', 'count'), quote = FALSE, eol = '\r\n')
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Print System and Session Info

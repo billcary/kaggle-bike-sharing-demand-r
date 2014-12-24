@@ -91,9 +91,9 @@ test.prediction <- data.frame(testing[, 1])
 # Set up training control parameters
 fitControl <- trainControl(## 10-fold CV
         method = "repeatedcv",
-        number = 1,
+        number = 2,
         ## repeated ten times
-        repeats = 1)
+        repeats = 2)
 
 # Set up the tuning grid
 gbmGrid <- expand.grid(interaction.depth = 6
@@ -113,7 +113,7 @@ casual.formula = casual ~ season  + holiday +
         workingday + weather + atemp + humidity + windspeed +
         dayofweek + hourofday + heatindex
 
-casual.model <- train(formula
+casual.model <- train(casual.formula
                ,data = training
                ,method = 'gbm'
                ,trControl = fitControl
@@ -126,13 +126,13 @@ summary(casual.model)
 
 ## Use the model for prediction and store the results in a new column
 ## in the submission template dataframe
-testing[, casual.predict] <- predict(casual.model, testing[, 2:15])
+testing$casual.predict <- predict(casual.model, testing[, 2:15])
 
 # summarize the results of the prediction
-summary(testing[, casual.predict])
+summary(testing$casual.predict)
 
 # Take absolute value to eliminate negative predictions
-testing[, casual.predict] <- abs(testing[, casual.predict])
+testing$casual.predict <- abs(testing$casual.predict)
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Train a model for Registered riders
@@ -147,7 +147,7 @@ registered.formula = registered ~ season  + holiday +
         workingday + weather + atemp + humidity + windspeed +
         dayofweek + hourofday + heatindex
 
-registered.model <- train(formula
+registered.model <- train(registered.formula
                       ,data = training
                       ,method = 'gbm'
                       ,trControl = fitControl
@@ -160,19 +160,19 @@ summary(registered.model)
 
 ## Use the model for prediction and store the results in a new column
 ## in the submission template dataframe
-testing[, registered.predict] <- predict(registered.model, testing[, 2:15])
+testing$registered.predict <- predict(registered.model, testing[, 2:15])
 
 # summarize the results of the prediction
-summary(testing[, registered.predict])
+summary(testing$registered.predict)
 
 # Take absolute value to eliminate negative predictions
-testing[, registered.predict] <- abs(testing[, registered.predict])
+testing$registered.predict <- abs(testing$registered.predict)
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Add Casual and Registered to get total predicted ridership
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-testing[, count.predict] <- testing[, registered.predict] +
-        testing[, registered.predict]
+testing$count.predict <- testing$casual.predict +
+        testing$registered.predict
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Performance diagnostics

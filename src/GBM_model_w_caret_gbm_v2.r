@@ -65,8 +65,8 @@ fitControl <- trainControl(## 10-fold CV
         ## repeated ten times
         repeats = 10)
 
-gbmGrid <- expand.grid(interaction.depth = 2
-                       ,n.trees = 100
+gbmGrid <- expand.grid(interaction.depth = c(2, 3, 4)
+                       ,n.trees = c(100, 1000, 1500, 2000)
                        ,shrinkage = 0.05)
 
 

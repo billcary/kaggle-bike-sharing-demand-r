@@ -100,62 +100,91 @@ gbmGrid <- expand.grid(interaction.depth = 6
                        ,n.trees = 1000
                        ,shrinkage = 0.05)
 
-## One Variable at at Time
-ls_label <- c("Casual Riders", "Registered Riders")
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Train a model for Casual riders
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~        
 
-for (n_label in 1:2) {
-        
-        ## Display
-        cat("\n\nNow training a GBM model for", ls_label[n_label], "...\n")
-        
-        ## Train a gbm
-        set.seed(300)
-        formula = training[, 16 + n_label] ~ season  + holiday +
-                workingday + weather + atemp + humidity + windspeed +
-                dayofweek + hourofday + heatindex
-        
-        model <- train(formula
-                        ,data = training
-                        ,method = 'gbm'
-                        ,trControl = fitControl
-                        ,tuneGrid = gbmGrid
-                        ,verbose = TRUE)
-        
-        ## Print the Model and Model Summary        
-        print(model)
-        summary(model)
-        
-        index <- n_label + 1
-        
-        ## Use the model for prediction and store the results in a new column
-        ## in the submission template dataframe
-        test.prediction[, index] <- predict(model, testing[, 2:15])
-        
-        # summarize the results of the prediction
-        summary(test.prediction[, index])
-        
-        # Take absolute value to eliminate negative predictions
-        test.prediction[, index] <- abs(test.prediction[, index])
-        
-}
+## Display
+cat("\n\nNow training a GBM model for Casual Riders...\n")
 
+## Train a gbm
+set.seed(300)
+casual.formula = casual ~ season  + holiday +
+        workingday + weather + atemp + humidity + windspeed +
+        dayofweek + hourofday + heatindex
+
+casual.model <- train(formula
+               ,data = training
+               ,method = 'gbm'
+               ,trControl = fitControl
+               ,tuneGrid = gbmGrid
+               ,verbose = TRUE)
+
+## Print the Model and Model Summary        
+print(casual.model)
+summary(casual.model)
+
+## Use the model for prediction and store the results in a new column
+## in the submission template dataframe
+testing[, casual.predict] <- predict(casual.model, testing[, 2:15])
+
+# summarize the results of the prediction
+summary(testing[, casual.predict])
+
+# Take absolute value to eliminate negative predictions
+testing[, casual.predict] <- abs(testing[, casual.predict])
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-## Add Casual and Registered to get total ridership
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-test.prediction[, 4] <- test.prediction[, 2] + test.prediction[, 3]
-colnames(test.prediction) <- c('datetime', 'casual', 'registered', 'count')
+## Train a model for Registered riders
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~        
+
+## Display
+cat("\n\nNow training a GBM model for Registered Riders...\n")
+
+## Train a gbm
+set.seed(300)
+registered.formula = registered ~ season  + holiday +
+        workingday + weather + atemp + humidity + windspeed +
+        dayofweek + hourofday + heatindex
+
+registered.model <- train(formula
+                      ,data = training
+                      ,method = 'gbm'
+                      ,trControl = fitControl
+                      ,tuneGrid = gbmGrid
+                      ,verbose = TRUE)
+
+## Print the Model and Model Summary        
+print(registered.model)
+summary(registered.model)
+
+## Use the model for prediction and store the results in a new column
+## in the submission template dataframe
+testing[, registered.predict] <- predict(registered.model, testing[, 2:15])
+
+# summarize the results of the prediction
+summary(testing[, registered.predict])
+
+# Take absolute value to eliminate negative predictions
+testing[, registered.predict] <- abs(testing[, registered.predict])
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-## Create data frame matching submission file format
+## Add Casual and Registered to get total predicted ridership
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-submit_file <- data.frame(test.prediction$datetime, test.prediction$count)
+testing[, count.predict] <- testing[, registered.predict] +
+        testing[, registered.predict]
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-## Write results to csv file for upload to Kaggle
+## Performance diagnostics
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-write.table(submit_file, file = path_results, row.names = FALSE, sep = ','
-            ,col.names = c('datetime', 'count'), quote = FALSE, eol = '\r\n')
+
+rmsle.casual <- rmsle(testing$casual, testing$casual.predict)
+rmsle.registered <- rmsle(testing$registered, testing$registered.predict)
+rmsle.count <- rmsle(testing$count, testing$count.predict)
+
+cat("\n\nRMSLE for casual riders is", rmsle.casual,"...\n")
+cat("\n\nRMSLE for registered riders is", rmsle.registered,"...\n")
+cat("\n\nRMSLE for total riders is", rmsle.count,"...\n")
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Print System and Session Info

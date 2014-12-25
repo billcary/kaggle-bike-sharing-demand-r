@@ -186,6 +186,50 @@ cat("\n\nRMSLE for casual riders is", rmsle.casual,"...\n")
 cat("\n\nRMSLE for registered riders is", rmsle.registered,"...\n")
 cat("\n\nRMSLE for total riders is", rmsle.count,"...\n")
 
+p1 <- ggplot(testing, aes(x=casual.predict, y=casual.predict - casual)) +
+        geom_point(shape=1) +    # Use hollow circles
+        geom_smooth() +          # Add a loess smoothed fit curve w/ conf region
+        labs(title = "Casual Ridership Residuals vs Predicted Values") +
+        ylab("Casual Ridership Residuals ") +
+        xlab("Predicted Values")
+
+p2 <- ggplot(testing, aes(x=casual.predict, y=casual)) +
+        geom_point(shape=1) +    # Use hollow circles
+        geom_smooth() +          # Add a loess smoothed fit curve w/ conf region
+        labs(title = "Casual Ridership Actual vs Predicted Values") +
+        ylab("Actual Values") +
+        xlab("Predicted Values")
+
+p3 <- ggplot(testing, aes(x=registered.predict, y=registered.predict - 
+                                  registered)) +
+        geom_point(shape=1) +    # Use hollow circles
+        geom_smooth() +          # Add a loess smoothed fit curve w/ conf region
+        labs(title = "Registered Ridership Residuals vs Predicted Values") +
+        ylab("Registered Ridership Residuals ") +
+        xlab("Predicted Values")
+
+p4 <- ggplot(testing, aes(x=registered.predict, y=registered)) +
+        geom_point(shape=1) +    # Use hollow circles
+        geom_smooth() +          # Add a loess smoothed fit curve w/ conf region
+        labs(title = "Registered Ridership Actual vs Predicted Values") +
+        ylab("Actual Values") +
+        xlab("Predicted Values")
+
+p5 <- ggplot(testing, aes(x=count.predict, y=count.predict - 
+                                  count)) +
+        geom_point(shape=1) +    # Use hollow circles
+        geom_smooth() +          # Add a loess smoothed fit curve w/ conf region
+        labs(title = "Total Ridership Residuals vs Predicted Values") +
+        ylab("Total Ridership Residuals ") +
+        xlab("Predicted Values")
+
+p6 <- ggplot(testing, aes(x=count.predict, y=count)) +
+        geom_point(shape=1) +    # Use hollow circles
+        geom_smooth() +          # Add a loess smoothed fit curve w/ conf region
+        labs(title = "Total Ridership Actual vs Predicted Values") +
+        ylab("Actual Values") +
+        xlab("Predicted Values")
+
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Print System and Session Info
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

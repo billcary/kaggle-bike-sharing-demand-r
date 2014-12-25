@@ -234,6 +234,53 @@ p6 <- ggplot(testing, aes(x=count.predict, y=count)) +
 grid.arrange(p1, p2, p3, p4, p5, p6, nrow=3, ncol=2)
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Train final caret model on full dataset prior to running Kaggle predictions
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+final.casual.model <- train(casual.formula
+                            ,data = processed_train
+                            ,method = 'gbm'
+                            ,trControl = fitControl
+                            ,n.trees = 3000
+                            ,interaction.depth = 7
+                            ,shrinkage = 0.05
+                            ,verbose = TRUE)
+
+final.registered.model <- train(registered.formula
+                          ,data = processed_train
+                          ,method = 'gbm'
+                          ,trControl = fitControl
+                          ,n.trees = 3000
+                          ,interaction.depth = 7
+                          ,shrinkage = 0.05
+                          ,verbose = TRUE)
+
+processed_test$casual.predict <- predict(final.casual.model,
+                                         processed_test[, 2:15])
+
+processed_test$casual.predict <- abs(processed_test$casual.predict)
+
+processed_test$registered.predict <- predict(final.registered.model,
+                                             processed_test[, 2:15])
+
+processed_test$registered.predict <- abs(processed_test$registered.predict)
+
+processed_test$count.predict <- processed_test$casual.predict +
+        processed_test$registered.predict
+
+
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Create data frame matching submission file format
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+submit_file <- data.frame(processed_test$timestamp, processed_test$count.predict)
+colnames(submit_file) <- c('datetime', 'count')
+
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Write results to csv file for upload to Kaggle
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+write.table(submit_file, file = path_results, row.names = FALSE, sep = ','
+            ,col.names = c('datetime', 'count'), quote = FALSE, eol = '\r\n')
+
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Print System and Session Info
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -34,6 +34,7 @@ source(paste0(path_source, 'process_raw_data_file.R')) # pre-processing
 library(caret)
 library(Metrics) # performance measurement & improvement
 library(doParallel)
+library(gridExtra)
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Register parallel backend
@@ -76,29 +77,29 @@ testing <- processed_train[-inTrain,]
 # Create single-column dataframe holding datetime values from test data
 test.prediction <- data.frame(testing[, 1])
 
-# # Set up training control parameters
-# fitControl <- trainControl(## 10-fold CV
-#         method = "repeatedcv",
-#         number = 10,
-#         ## repeated ten times
-#         repeats = 10)
-# 
-# # Set up the tuning grid
-# gbmGrid <- expand.grid(interaction.depth = c(3:6)
-#                        ,n.trees = c(40:50) * 50
-#                        ,shrinkage = 0.05)
-
 # Set up training control parameters
 fitControl <- trainControl(## 10-fold CV
         method = "repeatedcv",
-        number = 2,
+        number = 10,
         ## repeated ten times
-        repeats = 2)
+        repeats = 10)
 
 # Set up the tuning grid
-gbmGrid <- expand.grid(interaction.depth = 6
-                       ,n.trees = 1000
+gbmGrid <- expand.grid(interaction.depth = c(3:7)
+                       ,n.trees = c(50:60) * 50
                        ,shrinkage = 0.05)
+
+# # Set up training control parameters
+# fitControl <- trainControl(## 10-fold CV
+#         method = "repeatedcv",
+#         number = 2,
+#         ## repeated ten times
+#         repeats = 2)
+# 
+# # Set up the tuning grid
+# gbmGrid <- expand.grid(interaction.depth = 6
+#                        ,n.trees = 1000
+#                        ,shrinkage = 0.05)
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Train a model for Casual riders
@@ -229,6 +230,8 @@ p6 <- ggplot(testing, aes(x=count.predict, y=count)) +
         labs(title = "Total Ridership Actual vs Predicted Values") +
         ylab("Actual Values") +
         xlab("Predicted Values")
+
+grid.arrange(p1, p2, p3, p4, p5, p6, nrow=3, ncol=2)
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Print System and Session Info

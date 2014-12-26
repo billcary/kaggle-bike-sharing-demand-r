@@ -8,6 +8,7 @@ install.packages('doParallel', dependencies=TRUE, quiet = TRUE)
 install.packages('devtools', dependencies = TRUE, quiet = TRUE)
 install.packages('gbm', dependencies = TRUE, quiet = TRUE)
 install.packages('Cubist', dependencies = TRUE, quiet = TRUE)
+install.packages('gridExtra', dependencies = TRUE, quiet = TRUE)
 
 library(devtools)
 install_url(url = 'http://cran.r-project.org/src/contrib/Archive/weathermetrics/weathermetrics_1.0.tar.gz')

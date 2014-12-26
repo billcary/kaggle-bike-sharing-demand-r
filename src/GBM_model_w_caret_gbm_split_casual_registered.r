@@ -236,22 +236,30 @@ grid.arrange(p1, p2, p3, p4, p5, p6, nrow=3, ncol=2)
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Train final caret model on full dataset prior to running Kaggle predictions
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Set up training control parameters
+final.fit.Control <- trainControl(## 10-fold CV
+        method = "repeatedcv",
+        number = 10,
+        ## repeated ten times
+        repeats = 10)
+
+# Set up the tuning grid
+final.gbm.grid <- expand.grid(interaction.depth = 7
+                              ,n.trees = 3000
+                              ,shrinkage = 0.05)
+
 final.casual.model <- train(casual.formula
                             ,data = processed_train
                             ,method = 'gbm'
-                            ,trControl = fitControl
-                            ,n.trees = 3000
-                            ,interaction.depth = 7
-                            ,shrinkage = 0.05
+                            ,trControl = final.fit.Control
+                            ,tuneGrid = final.gbm.grid
                             ,verbose = TRUE)
 
 final.registered.model <- train(registered.formula
                           ,data = processed_train
                           ,method = 'gbm'
-                          ,trControl = fitControl
-                          ,n.trees = 3000
-                          ,interaction.depth = 7
-                          ,shrinkage = 0.05
+                          ,trControl = final.fit.Control
+                          ,tuneGrid = final.gbm.grid
                           ,verbose = TRUE)
 
 processed_test$casual.predict <- predict(final.casual.model,

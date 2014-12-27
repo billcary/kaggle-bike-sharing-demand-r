@@ -53,10 +53,6 @@ test <- read.csv(path_test)
 processed_train <- process.bike.data(train)
 processed_test <- process.bike.data(test)
 
-
-processed_test$casual <- 0
-processed_test$registered <- 0
-
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Holdout 25% of training data for prelim testing/RMSLE estimates
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -101,19 +97,19 @@ gbmGrid <- expand.grid(interaction.depth = c(3:7)
 #                        ,shrinkage = 0.05)
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-## Train a model for Casual riders
+## Train a model for total rider count
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~        
 
 ## Display
-cat("\n\nNow training a GBM model for Casual Riders...\n")
+cat("\n\nNow training a GBM model...\n")
 
 ## Train a gbm
 set.seed(300)
-casual.formula = casual ~ season  + holiday +
+formula = count ~ season  + holiday +
         workingday + weather + atemp + humidity + windspeed +
         dayofweek + hourofday + heatindex
 
-casual.model <- train(casual.formula
+model <- train(formula
                ,data = training
                ,method = 'gbm'
                ,trControl = fitControl
@@ -121,101 +117,28 @@ casual.model <- train(casual.formula
                ,verbose = TRUE)
 
 ## Print the Model and Model Summary        
-print(casual.model)
-summary(casual.model)
+print(model)
+summary(model)
 
 ## Use the model for prediction and store the results in a new column
 ## in the submission template dataframe
-testing$casual.predict <- predict(casual.model, testing[, 2:15])
+testing$count.predict <- predict(model, testing[, 2:15])
 
 # summarize the results of the prediction
-summary(testing$casual.predict)
+summary(testing$count.predict)
 
 # Take absolute value to eliminate negative predictions
-testing$casual.predict <- abs(testing$casual.predict)
-
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-## Train a model for Registered riders
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~        
-
-## Display
-cat("\n\nNow training a GBM model for Registered Riders...\n")
-
-## Train a gbm
-set.seed(300)
-registered.formula = registered ~ season  + holiday +
-        workingday + weather + atemp + humidity + windspeed +
-        dayofweek + hourofday + heatindex
-
-registered.model <- train(registered.formula
-                      ,data = training
-                      ,method = 'gbm'
-                      ,trControl = fitControl
-                      ,tuneGrid = gbmGrid
-                      ,verbose = TRUE)
-
-## Print the Model and Model Summary        
-print(registered.model)
-summary(registered.model)
-
-## Use the model for prediction and store the results in a new column
-## in the submission template dataframe
-testing$registered.predict <- predict(registered.model, testing[, 2:15])
-
-# summarize the results of the prediction
-summary(testing$registered.predict)
-
-# Take absolute value to eliminate negative predictions
-testing$registered.predict <- abs(testing$registered.predict)
-
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-## Add Casual and Registered to get total predicted ridership
-## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-testing$count.predict <- testing$casual.predict +
-        testing$registered.predict
+testing$count.predict <- abs(testing$count.predict)
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Performance diagnostics
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-rmsle.casual <- rmsle(testing$casual, testing$casual.predict)
-rmsle.registered <- rmsle(testing$registered, testing$registered.predict)
 rmsle.count <- rmsle(testing$count, testing$count.predict)
 
-cat("\n\nRMSLE for casual riders is", rmsle.casual,"...\n")
-cat("\n\nRMSLE for registered riders is", rmsle.registered,"...\n")
 cat("\n\nRMSLE for total riders is", rmsle.count,"...\n")
 
-p1 <- ggplot(testing, aes(x=casual.predict, y=casual.predict - casual)) +
-        geom_point(shape=1) +    # Use hollow circles
-        geom_smooth() +          # Add a loess smoothed fit curve w/ conf region
-        labs(title = "Casual Ridership Residuals vs Predicted Values") +
-        ylab("Casual Ridership Residuals ") +
-        xlab("Predicted Values")
-
-p2 <- ggplot(testing, aes(x=casual.predict, y=casual)) +
-        geom_point(shape=1) +    # Use hollow circles
-        geom_smooth() +          # Add a loess smoothed fit curve w/ conf region
-        labs(title = "Casual Ridership Actual vs Predicted Values") +
-        ylab("Actual Values") +
-        xlab("Predicted Values")
-
-p3 <- ggplot(testing, aes(x=registered.predict, y=registered.predict - 
-                                  registered)) +
-        geom_point(shape=1) +    # Use hollow circles
-        geom_smooth() +          # Add a loess smoothed fit curve w/ conf region
-        labs(title = "Registered Ridership Residuals vs Predicted Values") +
-        ylab("Registered Ridership Residuals ") +
-        xlab("Predicted Values")
-
-p4 <- ggplot(testing, aes(x=registered.predict, y=registered)) +
-        geom_point(shape=1) +    # Use hollow circles
-        geom_smooth() +          # Add a loess smoothed fit curve w/ conf region
-        labs(title = "Registered Ridership Actual vs Predicted Values") +
-        ylab("Actual Values") +
-        xlab("Predicted Values")
-
-p5 <- ggplot(testing, aes(x=count.predict, y=count.predict - 
+p1 <- ggplot(testing, aes(x=count.predict, y=count.predict - 
                                   count)) +
         geom_point(shape=1) +    # Use hollow circles
         geom_smooth() +          # Add a loess smoothed fit curve w/ conf region
@@ -223,14 +146,14 @@ p5 <- ggplot(testing, aes(x=count.predict, y=count.predict -
         ylab("Total Ridership Residuals ") +
         xlab("Predicted Values")
 
-p6 <- ggplot(testing, aes(x=count.predict, y=count)) +
+p2 <- ggplot(testing, aes(x=count.predict, y=count)) +
         geom_point(shape=1) +    # Use hollow circles
         geom_smooth() +          # Add a loess smoothed fit curve w/ conf region
         labs(title = "Total Ridership Actual vs Predicted Values") +
         ylab("Actual Values") +
         xlab("Predicted Values")
 
-grid.arrange(p1, p2, p3, p4, p5, p6, nrow=3, ncol=2)
+grid.arrange(p1, p2, nrow=1, ncol=2)
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Train final caret model on full dataset prior to running Kaggle predictions
@@ -244,35 +167,20 @@ final.fit.Control <- trainControl(## 10-fold CV
 
 # Set up the tuning grid
 final.gbm.grid <- expand.grid(interaction.depth = 7
-                              ,n.trees = 3000
+                              ,n.trees = 2950
                               ,shrinkage = 0.05)
 
-final.casual.model <- train(casual.formula
-                            ,data = processed_train
-                            ,method = 'gbm'
-                            ,trControl = final.fit.Control
-                            ,tuneGrid = final.gbm.grid
-                            ,verbose = TRUE)
+final.model <- train(formula
+                     ,data = processed_train
+                     ,method = 'gbm'
+                     ,trControl = final.fit.Control
+                     ,tuneGrid = final.gbm.grid
+                     ,verbose = TRUE)
 
-final.registered.model <- train(registered.formula
-                          ,data = processed_train
-                          ,method = 'gbm'
-                          ,trControl = final.fit.Control
-                          ,tuneGrid = final.gbm.grid
-                          ,verbose = TRUE)
+processed_test$count.predict <- predict(final.model,
+                                        processed_test[, 2:15])
 
-processed_test$casual.predict <- predict(final.casual.model,
-                                         processed_test[, 2:15])
-
-processed_test$casual.predict <- abs(processed_test$casual.predict)
-
-processed_test$registered.predict <- predict(final.registered.model,
-                                             processed_test[, 2:15])
-
-processed_test$registered.predict <- abs(processed_test$registered.predict)
-
-processed_test$count.predict <- processed_test$casual.predict +
-        processed_test$registered.predict
+processed_test$count.predict <- abs(processed_test$count.predict)
 
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

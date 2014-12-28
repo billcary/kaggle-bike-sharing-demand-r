@@ -73,6 +73,13 @@ process.bike.data <- function (bikedataframe) {
   newbikedata <- bikedataframe
 
   ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ## Log transform the outputs for use in the prediction model
+  ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  newbikedata$log.casual <- log(newbikedata$casual + 1)
+  newbikedata$log.registered <- log(newbikedata$registered + 1)
+  newbikedata$log.count <- log(newbikedata$count + 1)
+  
+  ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   ## Convert season, holiday, workingday into factor variables
   ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   newbikedata$season <- factor(newbikedata$season, levels = c(1, 2, 3, 4),

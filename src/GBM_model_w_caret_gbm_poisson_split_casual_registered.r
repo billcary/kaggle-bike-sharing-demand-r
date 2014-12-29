@@ -32,6 +32,7 @@ source(paste0(path_source, 'process_raw_data_file.R')) # pre-processing
 ## Load required libraries
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 library(caret)
+library(gbm)
 library(Metrics) # performance measurement & improvement
 library(doParallel)
 library(gridExtra)
@@ -48,14 +49,14 @@ registerDoParallel(cl)
 
 #Loading training file as well as test file - CHANGE THIS PATH APPROPRIATELY
 train <- read.csv(path_train)
-test <- read.csv(path_test)
+# test <- read.csv(path_test)
 
 # Pre-process both training and test data
 processed_train <- process.bike.data(train)
-processed_test <- process.bike.data(test)
-
-processed_test$casual <- 0
-processed_test$registered <- 0
+# processed_test <- process.bike.data(test)
+# 
+# processed_test$casual <- 0
+# processed_test$registered <- 0
 
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Holdout 25% of training data for prelim testing/RMSLE estimates
@@ -109,17 +110,17 @@ cat("\n\nNow training a GBM model for Casual Riders...\n")
 
 ## Train a gbm
 set.seed(300)
-casual.formula = log.casual ~ season  + holiday +
+casual.formula = casual ~ season  + holiday +
         workingday + weather + atemp + humidity + windspeed +
         dayofweek + hourofday + heatindex
 
 casual.model <- train(casual.formula
                ,data = training
                ,method = 'gbm'
+               ,distribution = 'poisson'
                ,trControl = fitControl
                ,tuneGrid = gbmGrid
-               ,distribution = 'poisson'
-               ,verbose = TRUE)
+               ,verbose = FALSE)
 
 ## Print the Model and Model Summary        
 print(casual.model)
@@ -127,10 +128,7 @@ summary(casual.model)
 
 ## Use the model for prediction and store the results in a new column
 ## in the submission template dataframe
-testing$log.casual.predict <- predict(casual.model, testing[, 2:15])
-
-# Convert predictions back to normal (non-log) scale
-testing$casual.predict <- exp(testing$log.casual.predict) - 1
+testing$casual.predict <- predict(casual.model, testing[, 2:15])
 
 # summarize the results of the prediction
 summary(testing$casual.predict)
@@ -147,17 +145,17 @@ cat("\n\nNow training a GBM model for Registered Riders...\n")
 
 ## Train a gbm
 set.seed(300)
-registered.formula = log.registered ~ season  + holiday +
+registered.formula = registered ~ season  + holiday +
         workingday + weather + atemp + humidity + windspeed +
         dayofweek + hourofday + heatindex
 
 registered.model <- train(registered.formula
-                      ,data = training
-                      ,method = 'gbm'
-                      ,trControl = fitControl
-                      ,tuneGrid = gbmGrid
-                      ,distribution = 'poisson'
-                      ,verbose = TRUE)
+                          ,data = training
+                          ,method = 'gbm'
+                          ,distribution = 'poisson'
+                          ,trControl = fitControl
+                          ,tuneGrid = gbmGrid
+                          ,verbose = FALSE)
 
 ## Print the Model and Model Summary        
 print(registered.model)
@@ -165,10 +163,7 @@ summary(registered.model)
 
 ## Use the model for prediction and store the results in a new column
 ## in the submission template dataframe
-testing$log.registered.predict <- predict(registered.model, testing[, 2:15])
-
-# Convert predictions back to normal (non-log) scale
-testing$registered.predict <- exp(testing$log.registered.predict) - 1
+testing$registered.predict <- predict(registered.model, testing[, 2:15])
 
 # summarize the results of the prediction
 summary(testing$registered.predict)

@@ -75,9 +75,12 @@ process.bike.data <- function (bikedataframe) {
   ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   ## Log transform the outputs for use in the prediction model
   ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  newbikedata$log.casual <- log(newbikedata$casual + 1)
-  newbikedata$log.registered <- log(newbikedata$registered + 1)
-  newbikedata$log.count <- log(newbikedata$count + 1)
+  # Reorder columns
+  if(ncol(newbikedata) == 12){
+          newbikedata$log.casual <- log(newbikedata$casual + 1)
+          newbikedata$log.registered <- log(newbikedata$registered + 1)
+          newbikedata$log.count <- log(newbikedata$count + 1)
+  }  
   
   ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   ## Convert season, holiday, workingday into factor variables
@@ -136,8 +139,8 @@ process.bike.data <- function (bikedataframe) {
 
   
   # Reorder columns
-  if(ncol(newbikedata) == 19){
-          newbikedata <- newbikedata[c(12, 1:8, 13:19, 9:11)]
+  if(ncol(newbikedata) == 22){
+          newbikedata <- newbikedata[c(15, 1:8, 16:22, 9:14)]
   }
   else{
           newbikedata <- newbikedata[c(9, 1:8, 10:16)]

@@ -13,4 +13,4 @@ data/
 domino.log
 dominodump-*
 domino.last.dump.rda
-domino.workspace.RData
+*.svg
